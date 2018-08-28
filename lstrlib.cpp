@@ -114,8 +114,8 @@ static int str_byte (lua_State *L) {
   if (posi > pose) return 0;  /* empty interval; return no values */
   n = (int)(pose -  posi + 1);
   if (posi + n <= pose)  /* overflow? */
-    luaL_error(L, FS("string slice too long"));
-  luaL_checkstack(L, n, FS("string slice too long"));
+    luaL_error(L, LUASTR("string slice too long"));
+  luaL_checkstack(L, n, LUASTR("string slice too long"));
   for (i=0; i<n; i++)
     lua_pushinteger(L, uchar(s[posi+i-1]));
   return n;
@@ -150,7 +150,7 @@ static int str_dump (lua_State *L) {
   lua_settop(L, 1);
   luaL_buffinit(L,&b);
   if (lua_dump(L, writer, &b) != 0)
-    luaL_error(L, FS("unable to dump given function"));
+    luaL_error(L, LUASTR("unable to dump given function"));
   luaL_pushresult(&b);
   return 1;
 }
@@ -186,7 +186,7 @@ typedef struct MatchState {
 static int check_capture (MatchState *ms, int l) {
   l -= '1';
   if (l < 0 || l >= ms->level || ms->capture[l].len == CAP_UNFINISHED)
-    return luaL_error(ms->L, FS("invalid capture index"));
+    return luaL_error(ms->L, LUASTR("invalid capture index"));
   return l;
 }
 
@@ -195,7 +195,7 @@ static int capture_to_close (MatchState *ms) {
   int level = ms->level;
   for (level--; level>=0; level--)
     if (ms->capture[level].len == CAP_UNFINISHED) return level;
-  return luaL_error(ms->L, FS("invalid pattern capture"));
+  return luaL_error(ms->L, LUASTR("invalid pattern capture"));
 }
 
 
@@ -203,14 +203,14 @@ static const char *classend (MatchState *ms, const char *p) {
   switch (*p++) {
     case L_ESC: {
       if (*p == '\0')
-        luaL_error(ms->L, FS("malformed pattern (ends with " LUA_QL("%%") ")"));
+        luaL_error(ms->L, LUASTR("malformed pattern (ends with " LUA_QL("%%") ")"));
       return p+1;
     }
     case '[': {
       if (*p == '^') p++;
       do {  /* look for a `]' */
         if (*p == '\0')
-          luaL_error(ms->L, FS("malformed pattern (missing " LUA_QL("]") ")"));
+          luaL_error(ms->L, LUASTR("malformed pattern (missing " LUA_QL("]") ")"));
         if (*(p++) == L_ESC && *p != '\0')
           p++;  /* skip escapes (e.g. `%]') */
       } while (*p != ']');
@@ -281,7 +281,7 @@ static const char *match (MatchState *ms, const char *s, const char *p);
 static const char *matchbalance (MatchState *ms, const char *s,
                                    const char *p) {
   if (*p == 0 || *(p+1) == 0)
-    luaL_error(ms->L, FS("unbalanced pattern"));
+    luaL_error(ms->L, LUASTR("unbalanced pattern"));
   if (*s != *p) return NULL;
   else {
     int b = *p;
@@ -330,7 +330,7 @@ static const char *start_capture (MatchState *ms, const char *s,
                                     const char *p, int what) {
   const char *res;
   int level = ms->level;
-  if (level >= LUA_MAXCAPTURES) luaL_error(ms->L, FS("too many captures"));
+  if (level >= LUA_MAXCAPTURES) luaL_error(ms->L, LUASTR("too many captures"));
   ms->capture[level].init = s;
   ms->capture[level].len = what;
   ms->level = level+1;
@@ -385,7 +385,7 @@ static const char *match (MatchState *ms, const char *s, const char *p) {
           const char *ep; char previous;
           p += 2;
           if (*p != '[')
-            luaL_error(ms->L, FS("missing " LUA_QL("[") " after "
+            luaL_error(ms->L, LUASTR("missing " LUA_QL("[") " after "
                                LUA_QL("%%f") " in pattern"));
           ep = classend(ms, p);  /* points to what is next */
           previous = (s == ms->src_init) ? '\0' : *(s-1);
@@ -469,11 +469,11 @@ static void push_onecapture (MatchState *ms, int i, const char *s,
     if (i == 0)  /* ms->level == 0, too */
       lua_pushlstring(ms->L, s, e - s);  /* add whole match */
     else
-      luaL_error(ms->L, FS("invalid capture index"));
+      luaL_error(ms->L, LUASTR("invalid capture index"));
   }
   else {
     ptrdiff_t l = ms->capture[i].len;
-    if (l == CAP_UNFINISHED) luaL_error(ms->L, FS("unfinished capture"));
+    if (l == CAP_UNFINISHED) luaL_error(ms->L, LUASTR("unfinished capture"));
     if (l == CAP_POSITION)
       lua_pushinteger(ms->L, ms->capture[i].init - ms->src_init + 1);
     else
@@ -582,7 +582,7 @@ static int gmatch (lua_State *L) {
 
 #if LUA_OPTIMIZE_MEMORY == 0 || !defined(LUA_COMPAT_GFIND)
 static int gfind_nodef (lua_State *L) {
-  return luaL_error(L, FS(LUA_QL("string.gfind") " was renamed to "
+  return luaL_error(L, LUASTR(LUA_QL("string.gfind") " was renamed to "
                        LUA_QL("string.gmatch")));
 }
 #endif
@@ -637,7 +637,7 @@ static void add_value (MatchState *ms, luaL_Buffer *b, const char *s,
     lua_pushlstring(L, s, e - s);  /* keep original text */
   }
   else if (!lua_isstring(L, -1))
-    luaL_error(L, FS("invalid replacement value (a %s)"), luaL_typename(L, -1));
+    luaL_error(L, LUASTR("invalid replacement value (a %s)"), luaL_typename(L, -1));
   luaL_addvalue(b);  /* add result to accumulator */
 }
 
@@ -729,7 +729,7 @@ static const char *scanformat (lua_State *L, const char *strfrmt, char *form) {
   const char *p = strfrmt;
   while (*p != '\0' && strchr(FLAGS, *p) != NULL) p++;  /* skip flags */
   if ((size_t)(p - strfrmt) >= sizeof(FLAGS))
-    luaL_error(L, FS("invalid format (repeated flags)"));
+    luaL_error(L, LUASTR("invalid format (repeated flags)"));
   if (isdigit(uchar(*p))) p++;  /* skip width */
   if (isdigit(uchar(*p))) p++;  /* (2 digits at most) */
   if (*p == '.') {
@@ -738,7 +738,7 @@ static const char *scanformat (lua_State *L, const char *strfrmt, char *form) {
     if (isdigit(uchar(*p))) p++;  /* (2 digits at most) */
   }
   if (isdigit(uchar(*p)))
-    luaL_error(L, FS("invalid format (width or precision too long)"));
+    luaL_error(L, LUASTR("invalid format (width or precision too long)"));
   *(form++) = '%';
   strncpy(form, strfrmt, p - strfrmt + 1);
   form += p - strfrmt + 1;
@@ -817,7 +817,7 @@ static int str_format (lua_State *L) {
           }
         }
         default: {  /* also treat cases `pnLlh' */
-          return luaL_error(L, FS("invalid option " LUA_QL("%%%c") " to "
+          return luaL_error(L, LUASTR("invalid option " LUA_QL("%%%c") " to "
                                LUA_QL("format")), *(strfrmt - 1));
         }
       }

@@ -150,7 +150,7 @@ void luaV_gettable (lua_State *L, const TValue *t, TValue *key, StkId val) {
     setobj(L, &temp, tm);  /* avoid pointing inside table (may rehash) */
     t = &temp;
   }
-  luaG_runerror(L, FS("loop in gettable"));
+  luaG_runerror(L, LUASTR("loop in gettable"));
 }
 
 
@@ -191,7 +191,7 @@ void luaV_settable (lua_State *L, const TValue *t, TValue *key, StkId val) {
     t = &temp;
     setobj2s(L, L->top-1, t);  /* need to protect value from EGC. */
   }
-  luaG_runerror(L, FS("loop in settable"));
+  luaG_runerror(L, LUASTR("loop in settable"));
 }
 
 

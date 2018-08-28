@@ -81,7 +81,7 @@ static int setn (lua_State *L) {
 #ifndef luaL_setn
   luaL_setn(L, 1, luaL_checkint(L, 2));
 #else
-  luaL_error(L, FS(LUA_QL("setn") " is obsolete"));
+  luaL_error(L, LUASTR(LUA_QL("setn") " is obsolete"));
 #endif
   lua_pushvalue(L, 1);
   return 1;
@@ -107,7 +107,7 @@ static int tinsert (lua_State *L) {
       break;
     }
     default: {
-      return luaL_error(L, FS("wrong number of arguments to " LUA_QL("insert")));
+      return luaL_error(L, LUASTR("wrong number of arguments to " LUA_QL("insert")));
     }
   }
   luaL_setn(L, 1, e);  /* new size */
@@ -136,7 +136,7 @@ static int tremove (lua_State *L) {
 static void addfield (lua_State *L, luaL_Buffer *b, int i) {
   lua_rawgeti(L, 1, i);
   if (!lua_isstring(L, -1))
-    luaL_error(L, FS("invalid value (%s) at index %d in table for "
+    luaL_error(L, LUASTR("invalid value (%s) at index %d in table for "
                   LUA_QL("concat")), luaL_typename(L, -1), i);
   luaL_addvalue(b);
 }
@@ -225,12 +225,12 @@ static void auxsort (lua_State *L, int l, int u) {
     for (;;) {  /* invariant: a[l..i] <= P <= a[j..u] */
       /* repeat ++i until a[i] >= P */
       while (lua_rawgeti(L, 1, ++i), sort_comp(L, -1, -2)) {
-        if (i>u) luaL_error(L, FS("invalid order function for sorting"));
+        if (i>u) luaL_error(L, LUASTR("invalid order function for sorting"));
         lua_pop(L, 1);  /* remove a[i] */
       }
       /* repeat --j until a[j] <= P */
       while (lua_rawgeti(L, 1, --j), sort_comp(L, -3, -1)) {
-        if (j<l) luaL_error(L, FS("invalid order function for sorting"));
+        if (j<l) luaL_error(L, LUASTR("invalid order function for sorting"));
         lua_pop(L, 1);  /* remove a[j] */
       }
       if (j<i) {

@@ -82,7 +82,7 @@ static void fixjump (FuncState *fs, int pc, int dest) {
   int offset = dest-(pc+1);
   lua_assert(dest != NO_JUMP);
   if (abs(offset) > MAXARG_sBx)
-    luaX_syntaxerror(fs->ls, FS("control structure too long"));
+    luaX_syntaxerror(fs->ls, LUASTR("control structure too long"));
   SETARG_sBx(*jmp, offset);
 }
 
@@ -200,7 +200,7 @@ void luaK_checkstack (FuncState *fs, int n) {
   int newstack = fs->freereg + n;
   if (newstack > fs->f->maxstacksize) {
     if (newstack >= MAXSTACK)
-      luaX_syntaxerror(fs->ls, FS("function or expression too complex"));
+      luaX_syntaxerror(fs->ls, LUASTR("function or expression too complex"));
     fs->f->maxstacksize = cast_byte(newstack);
   }
 }
@@ -238,7 +238,7 @@ static int addk (FuncState *fs, TValue *k, TValue *v) {
   else {  /* constant not found; create a new entry */
     setnvalue(idx, cast_num(fs->nk));
     luaM_growvector(L, f->k, fs->nk, f->sizek, TValue,
-                    MAXARG_Bx, FS("constant table overflow"));
+                    MAXARG_Bx, LUASTR("constant table overflow"));
     while (oldsize < f->sizek) setnilvalue(&f->k[oldsize++]);
     setobj(L, &f->k[fs->nk], v);
     luaC_barrier(L, f, v);
@@ -791,11 +791,11 @@ static int luaK_code (FuncState *fs, Instruction i, int line) {
   dischargejpc(fs);  /* `pc' will change */
   /* put new instruction in code array */
   luaM_growvector(fs->L, f->code, fs->pc, f->sizecode, Instruction,
-                  MAX_INT, FS("code size overflow"));
+                  MAX_INT, LUASTR("code size overflow"));
   f->code[fs->pc] = i;
   /* save corresponding line information */
   luaM_growvector(fs->L, f->lineinfo, fs->pc, f->sizelineinfo, int,
-                  MAX_INT, FS("code size overflow"));
+                  MAX_INT, LUASTR("code size overflow"));
   f->lineinfo[fs->pc] = line;
   return fs->pc++;
 }

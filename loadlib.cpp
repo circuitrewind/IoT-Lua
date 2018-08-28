@@ -100,7 +100,7 @@ static void setprogdir (lua_State *L) {
   DWORD nsize = sizeof(buff)/sizeof(char);
   DWORD n = GetModuleFileNameA(NULL, buff, nsize);
   if (n == 0 || n == nsize || (lb = strrchr(buff, '\\')) == NULL)
-    luaL_error(L, FS("unable to get ModuleFileName"));
+    luaL_error(L, LUASTR("unable to get ModuleFileName"));
   else {
     *lb = '\0';
     luaL_gsub(L, lua_tostring(L, -1), LUA_EXECDIR, buff);
@@ -355,7 +355,7 @@ static const char *findfile (lua_State *L, const char *name,
   lua_getfield(L, LUA_ENVIRONINDEX, pname);
   path = lua_tostring(L, -1);
   if (path == NULL)
-    luaL_error(L, FS(LUA_QL("package.%s") " must be a string"), pname);
+    luaL_error(L, LUASTR(LUA_QL("package.%s") " must be a string"), pname);
   lua_pushliteral(L, "");  /* error accumulator */
   while ((path = pushnexttemplate(L, path)) != NULL) {
     const char *filename;
@@ -372,7 +372,7 @@ static const char *findfile (lua_State *L, const char *name,
 
 
 static void loaderror (lua_State *L, const char *filename) {
-  luaL_error(L, FS("error loading module " LUA_QS " from file " LUA_QS ":\n\t%s"),
+  luaL_error(L, LUASTR("error loading module " LUA_QS " from file " LUA_QS ":\n\t%s"),
                 lua_tostring(L, 1), filename, lua_tostring(L, -1));
 }
 
@@ -436,7 +436,7 @@ static int loader_preload (lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   lua_getfield(L, LUA_ENVIRONINDEX, "preload");
   if (!lua_istable(L, -1))
-    luaL_error(L, FS(LUA_QL("package.preload") " must be a table"));
+    luaL_error(L, LUASTR(LUA_QL("package.preload") " must be a table"));
   lua_getfield(L, -1, name);
   if (lua_isnil(L, -1))  /* not found? */
     lua_pushfstring(L, "\n\tno field package.preload['%s']", name);
@@ -456,7 +456,7 @@ static int ll_require (lua_State *L) {
   lua_getfield(L, 2, name);
   if (lua_toboolean(L, -1)) {  /* is it there? */
     if (lua_touserdata(L, -1) == sentinel)  /* check loops */
-      luaL_error(L, FS("loop or previous error loading module " LUA_QS), name);
+      luaL_error(L, LUASTR("loop or previous error loading module " LUA_QS), name);
     return 1;  /* package is already loaded */
   }
   /* Is this a readonly table? */
@@ -468,12 +468,12 @@ static int ll_require (lua_State *L) {
   /* else must load it; iterate over available loaders */
   lua_getfield(L, LUA_ENVIRONINDEX, "loaders");
   if (!lua_istable(L, -1))
-    luaL_error(L, FS(LUA_QL("package.loaders") " must be a table"));
+    luaL_error(L, LUASTR(LUA_QL("package.loaders") " must be a table"));
   lua_pushliteral(L, "");  /* error message accumulator */
   for (i=1; ; i++) {
     lua_rawgeti(L, -2, i);  /* get a loader */
     if (lua_isnil(L, -1))
-      luaL_error(L, FS("module " LUA_QS " not found:%s"),
+      luaL_error(L, LUASTR("module " LUA_QS " not found:%s"),
                     name, lua_tostring(L, -2));
     lua_pushstring(L, name);
     lua_call(L, 1, 1);  /* call it */
@@ -515,7 +515,7 @@ static void setfenv (lua_State *L) {
   if (lua_getstack(L, 1, &ar) == 0 ||
       lua_getinfo(L, "f", &ar) == 0 ||  /* get calling function */
       lua_iscfunction(L, -1))
-    luaL_error(L, FS(LUA_QL("module") " not called from a Lua function"));
+    luaL_error(L, LUASTR(LUA_QL("module") " not called from a Lua function"));
   lua_pushvalue(L, -2);
   lua_setfenv(L, -2);
   lua_pop(L, 1);
@@ -558,7 +558,7 @@ static int ll_module (lua_State *L) {
     lua_pop(L, 1);  /* remove previous result */
     /* try global variable (and create one if it does not exist) */
     if (luaL_findtable(L, LUA_GLOBALSINDEX, modname, 1) != NULL)
-      return luaL_error(L, FS("name conflict for module " LUA_QS), modname);
+      return luaL_error(L, LUASTR("name conflict for module " LUA_QS), modname);
     lua_pushvalue(L, -1);
     lua_setfield(L, loaded, modname);  /* _LOADED[modname] = new table */
   }

@@ -176,7 +176,7 @@ static CallInfo *growCI (lua_State *L) {
   else {
     luaD_reallocCI(L, 2*L->size_ci);
     if (L->size_ci > LUAI_MAXCALLS)
-      luaG_runerror(L, FS("stack overflow"));
+      luaG_runerror(L, LUASTR("stack overflow"));
   }
   return ++L->ci;
 }
@@ -258,7 +258,7 @@ static StkId tryfuncTM (lua_State *L, StkId func) {
   StkId p;
   ptrdiff_t funcr = savestack(L, func);
   if (!ttisfunction(tm))
-    luaG_typeerror(L, func, FS("call"));
+    luaG_typeerror(L, func, LUASTR("call"));
   /* Open a hole inside the stack at `func' */
   for (p = L->top; p > func; p--) setobjs2s(L, p, p-1);
   incr_top(L);
@@ -386,7 +386,7 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
 void luaD_call (lua_State *L, StkId func, int nResults) {
   if (++L->nCcalls >= LUAI_MAXCCALLS) {
     if (L->nCcalls == LUAI_MAXCCALLS)
-      luaG_runerror(L, FS("C stack overflow"));
+      luaG_runerror(L, LUASTR("C stack overflow"));
     else if (L->nCcalls >= (LUAI_MAXCCALLS + (LUAI_MAXCCALLS>>3)))
       luaD_throw(L, LUA_ERRERR);  /* error while handing stack error */
   }
@@ -435,9 +435,9 @@ LUA_API int lua_resume (lua_State *L, int nargs) {
   int status;
   lua_lock(L);
   if (L->status != LUA_YIELD && (L->status != 0 || L->ci != L->base_ci))
-      return resume_error(L, FS("cannot resume non-suspended coroutine"));
+      return resume_error(L, LUASTR("cannot resume non-suspended coroutine"));
   if (L->nCcalls >= LUAI_MAXCCALLS)
-    return resume_error(L, FS("C stack overflow"));
+    return resume_error(L, LUASTR("C stack overflow"));
   luai_userstateresume(L, nargs);
   lua_assert(L->errfunc == 0);
   L->baseCcalls = ++L->nCcalls;
@@ -461,7 +461,7 @@ LUA_API int lua_yield (lua_State *L, int nresults) {
   luai_userstateyield(L, nresults);
   lua_lock(L);
   if (L->nCcalls > L->baseCcalls)
-    luaG_runerror(L, FS("attempt to yield across metamethod/C-call boundary"));
+    luaG_runerror(L, LUASTR("attempt to yield across metamethod/C-call boundary"));
   L->base = L->top - nresults;  /* protect stack slots below */
   L->status = LUA_YIELD;
   lua_unlock(L);

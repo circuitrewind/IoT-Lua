@@ -15,6 +15,7 @@
 
 
 #include "luaconf.h"
+#include "arduino.h"
 
 
 #define LUA_VERSION	"Lua 5.1"
@@ -128,10 +129,6 @@ LUA_API int   (lua_checkstack) (lua_State *L, int sz);
 
 LUA_API void  (lua_xmove) (lua_State *from, lua_State *to, int n);
 
-
-
-LUA_API const char *_FS(const void *item);
-#define FS(x) (_FS(F(x)))
 
 
 /*

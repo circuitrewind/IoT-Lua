@@ -83,7 +83,7 @@ static int io_type (lua_State *L) {
 static FILE *tofile (lua_State *L) {
   FILE **f = tofilep(L);
   if (*f == NULL)
-    luaL_error(L, FS("attempt to use a closed file"));
+    luaL_error(L, LUASTR("attempt to use a closed file"));
   return *f;
 }
 
@@ -139,7 +139,7 @@ static int io_fclose (lua_State *L) {
 static int aux_close (lua_State *L) {
 #if LUA_OPTIMIZE_MEMORY != 2
   lua_getfenv(L, 1);
-  lua_getfield(L, -1, FS("__close"));
+  lua_getfield(L, -1, LUASTR("__close"));
   return (lua_tocfunction(L, -1))(L);
 #else
   FILE **p = tofilep(L);
@@ -217,7 +217,7 @@ static FILE *getiofile (lua_State *L, int findex) {
   LUA_IO_GETFIELD(findex);
   f = *(FILE **)lua_touserdata(L, -1);
   if (f == NULL)
-    luaL_error(L, FS("standard %s file is closed"), fnames[findex - 1]);
+    luaL_error(L, LUASTR("standard %s file is closed"), fnames[findex - 1]);
   return f;
 }
 
@@ -366,7 +366,7 @@ static int g_read (lua_State *L, FILE *f, int first) {
     n = first+1;  /* to return 1 result */
   }
   else {  /* ensure stack space for all results and for auxlib's buffer */
-    luaL_checkstack(L, nargs+LUA_MINSTACK, FS("too many arguments"));
+    luaL_checkstack(L, nargs+LUA_MINSTACK, LUASTR("too many arguments"));
     success = 1;
     for (n = first; nargs-- && success; n++) {
       if (lua_type(L, n) == LUA_TNUMBER) {
@@ -375,7 +375,7 @@ static int g_read (lua_State *L, FILE *f, int first) {
       }
       else {
         const char *p = lua_tostring(L, n);
-        luaL_argcheck(L, p && p[0] == '*', n, FS("invalid option"));
+        luaL_argcheck(L, p && p[0] == '*', n, LUASTR("invalid option"));
         switch (p[1]) {
           case 'n':  /* number */
             success = read_number(L, f);
@@ -388,7 +388,7 @@ static int g_read (lua_State *L, FILE *f, int first) {
             success = 1; /* always success */
             break;
           default:
-            return luaL_argerror(L, n, FS("invalid format"));
+            return luaL_argerror(L, n, LUASTR("invalid format"));
         }
       }
     }
@@ -417,10 +417,10 @@ static int io_readline (lua_State *L) {
   FILE *f = *(FILE **)lua_touserdata(L, lua_upvalueindex(1));
   int sucess;
   if (f == NULL)  /* file is already closed? */
-    luaL_error(L, FS("file is already closed"));
+    luaL_error(L, LUASTR("file is already closed"));
   sucess = read_line(L, f);
   if (ferror(f))
-    return luaL_error(L, FS("%s"), strerror(errno));
+    return luaL_error(L, LUASTR("%s"), strerror(errno));
   if (sucess) return 1;
   else {  /* EOF */
     if (lua_toboolean(L, lua_upvalueindex(2))) {  /* generator created file? */

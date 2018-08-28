@@ -117,7 +117,7 @@ static const char *findlocal (lua_State *L, CallInfo *ci, int n) {
   else {
     StkId limit = (ci == L->ci) ? L->top : (ci+1)->func;
     if (limit - ci->base >= n && n > 0)  /* is 'n' inside 'ci' stack? */
-      return FS("(*temporary)");
+      return LUASTR("(*temporary)");
     else
       return NULL;
   }
@@ -582,17 +582,17 @@ void luaG_typeerror (lua_State *L, const TValue *o, const char *op) {
                          getobjname(L, L->ci, cast_int(o - L->base), &name) :
                          NULL;
   if (kind)
-    luaG_runerror(L, FS("attempt to %s %s " LUA_QS " (a %s value)"),
+    luaG_runerror(L, LUASTR("attempt to %s %s " LUA_QS " (a %s value)"),
                 op, kind, name, t);
   else
-    luaG_runerror(L, FS("attempt to %s a %s value"), op, t);
+    luaG_runerror(L, LUASTR("attempt to %s a %s value"), op, t);
 }
 
 
 void luaG_concaterror (lua_State *L, StkId p1, StkId p2) {
   if (ttisstring(p1) || ttisnumber(p1)) p1 = p2;
   lua_assert(!ttisstring(p1) && !ttisnumber(p1));
-  luaG_typeerror(L, p1, FS("concatenate"));
+  luaG_typeerror(L, p1, LUASTR("concatenate"));
 }
 
 
@@ -600,7 +600,7 @@ void luaG_aritherror (lua_State *L, const TValue *p1, const TValue *p2) {
   TValue temp;
   if (luaV_tonumber(p1, &temp) == NULL)
     p2 = p1;  /* first operand is wrong */
-  luaG_typeerror(L, p2, FS("perform arithmetic on"));
+  luaG_typeerror(L, p2, LUASTR("perform arithmetic on"));
 }
 
 
@@ -608,9 +608,9 @@ int luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2) {
   const char *t1 = luaT_typenames[ttype(p1)];
   const char *t2 = luaT_typenames[ttype(p2)];
   if (t1[2] == t2[2])
-    luaG_runerror(L, FS("attempt to compare two %s values"), t1);
+    luaG_runerror(L, LUASTR("attempt to compare two %s values"), t1);
   else
-    luaG_runerror(L, FS("attempt to compare %s with %s"), t1, t2);
+    luaG_runerror(L, LUASTR("attempt to compare %s with %s"), t1, t2);
   return 0;
 }
 

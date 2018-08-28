@@ -297,7 +297,7 @@ static void resizenodevector (lua_State *L, Table *t, int oldsize, int newsize) 
     int i;
     lsize = ceillog2(newsize);
     if (lsize > MAXBITS)
-      luaG_runerror(L, FS("table overflow"));
+      luaG_runerror(L, LUASTR("table overflow"));
     newsize = twoto(lsize);
     if (node == dummynode) {
       oldsize = 0;
@@ -393,7 +393,7 @@ static void resize_hashpart (lua_State *L, Table *t, int nhsize) {
   if (nhsize > 0) { /* round new hashpart size up to next power of two. */
     lsize=ceillog2(nhsize);
     if (lsize > MAXBITS)
-      luaG_runerror(L, FS("table overflow"));
+      luaG_runerror(L, LUASTR("table overflow"));
   }
   nhsize = twoto(lsize);
   /* grow hash part to new size. */
@@ -661,9 +661,9 @@ TValue *luaH_set (lua_State *L, Table *t, const TValue *key) {
   if (p != luaO_nilobject)
     return cast(TValue *, p);
   else {
-    if (ttisnil(key)) luaG_runerror(L, FS("table index is nil"));
+    if (ttisnil(key)) luaG_runerror(L, LUASTR("table index is nil"));
     else if (ttisnumber(key) && luai_numisnan(nvalue(key)))
-      luaG_runerror(L, FS("table index is NaN"));
+      luaG_runerror(L, LUASTR("table index is NaN"));
     return newkey(L, t, key);
   }
 }

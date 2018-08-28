@@ -265,7 +265,7 @@ static int math_random (lua_State *L) {
       lua_pushnumber(L, (r%(u-l+1))+l);  /* int between `l' and `u' */
       break;
     }
-    default: return luaL_error(L, FS("wrong number of arguments"));
+    default: return luaL_error(L, LUASTR("wrong number of arguments"));
   }
   return 1;
 }
@@ -294,7 +294,7 @@ static int math_random (lua_State *L) {
       lua_pushnumber(L, floor(r*(u-l+1))+l);  /* int between `l' and `u' */
       break;
     }
-    default: return luaL_error(L, FS("wrong number of arguments"));
+    default: return luaL_error(L, LUASTR("wrong number of arguments"));
   }
   return 1;
 }

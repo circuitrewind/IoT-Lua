@@ -60,7 +60,7 @@ static int os_tmpname (lua_State *L) {
   int err;
   lua_tmpnam(buff, err);
   if (err)
-    return luaL_error(L, FS("unable to generate a unique filename"));
+    return luaL_error(L, LUASTR("unable to generate a unique filename"));
   lua_pushstring(L, buff);
   return 1;
 }
@@ -114,7 +114,7 @@ static int getfield (lua_State *L, const char *key, int d) {
     res = (int)lua_tointeger(L, -1);
   else {
     if (d < 0)
-      return luaL_error(L, FS("field " LUA_QS " missing in date table"), key);
+      return luaL_error(L, LUASTR("field " LUA_QS " missing in date table"), key);
     res = d;
   }
   lua_pop(L, 1);

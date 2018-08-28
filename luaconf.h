@@ -645,11 +645,11 @@
     (a)%(b)+(b)))
 #define luai_lnumdiv(a,b)	\
   ((b)==0?			\
-   (luaG_runerror(L,FS("divide by zero")),0): \
+   (luaG_runerror(L,LUASTR("divide by zero")),0): \
    luai_numdiv(a,b))
 #define luai_lnummod(a,b)	\
   ((b)==0?			\
-   (luaG_runerror(L,FS("modulo by zero")),0): \
+   (luaG_runerror(L,LUASTR("modulo by zero")),0): \
    luai_nummod(a,b))
 LUA_NUMBER luai_ipow(LUA_NUMBER, LUA_NUMBER);
 #define luai_numpow(a,b)	(luai_ipow(a,b))
@@ -803,7 +803,7 @@ union luai_Cast { double l_d; long l_l; };
 #else
 
 #define lua_popen(L,c,m)	((void)((void)c, m),  \
-		luaL_error(L, FS(LUA_QL("popen") " not supported")), (FILE*)0)
+		luaL_error(L, LUASTR(LUA_QL("popen") " not supported")), (FILE*)0)
 #define lua_pclose(L,file)		((void)((void)L, file), 0)
 
 #endif

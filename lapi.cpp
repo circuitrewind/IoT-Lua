@@ -206,14 +206,14 @@ LUA_API void lua_replace (lua_State *L, int idx) {
   lua_lock(L);
   /* explicit test for incompatible code */
   if (idx == LUA_ENVIRONINDEX && L->ci == L->base_ci)
-    luaG_runerror(L, FS("no calling environment"));
+    luaG_runerror(L, LUASTR("no calling environment"));
   api_checknelems(L, 1);
   o = index2adr(L, idx);
   api_checkvalidindex(L, o);
   if (idx == LUA_ENVIRONINDEX) {
     Closure *func = curr_func(L);
     if (!func)
-      luaG_runerror(L, FS("attempt to set environment on lightfunction"));
+      luaG_runerror(L, LUASTR("attempt to set environment on lightfunction"));
     else {
       api_check(L, ttistable(L->top - 1));
       func->c.env = hvalue(L->top - 1);

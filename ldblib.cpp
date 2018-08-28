@@ -38,7 +38,7 @@ static int db_getmetatable (lua_State *L) {
 static int db_setmetatable (lua_State *L) {
   int t = lua_type(L, 2);
   luaL_argcheck(L, t == LUA_TNIL || t == LUA_TTABLE, 2,
-                    FS("nil or table expected"));
+                    LUASTR("nil or table expected"));
   lua_settop(L, 2);
   lua_pushboolean(L, lua_setmetatable(L, 1));
   return 1;
@@ -56,7 +56,7 @@ static int db_setfenv (lua_State *L) {
   luaL_checktype(L, 2, LUA_TTABLE);
   lua_settop(L, 2);
   if (lua_setfenv(L, 1) == 0)
-    luaL_error(L, FS(LUA_QL("setfenv")
+    luaL_error(L, LUASTR(LUA_QL("setfenv")
                   " cannot change environment of given object"));
   return 1;
 }
@@ -101,7 +101,7 @@ static int db_getinfo (lua_State *L) {
   lua_Debug ar;
   int arg;
   lua_State *L1 = getthread(L, &arg);
-  const char *options = luaL_optstring(L, arg+2, FS("flnSu"));
+  const char *options = luaL_optstring(L, arg+2, LUASTR("flnSu"));
   if (lua_isnumber(L, arg+1)) {
     if (!lua_getstack(L1, (int)lua_tointeger(L, arg+1), &ar)) {
       lua_pushnil(L);  /* level out of range */
@@ -115,29 +115,29 @@ static int db_getinfo (lua_State *L) {
     lua_xmove(L, L1, 1);
   }
   else
-    return luaL_argerror(L, arg+1, FS("function or level expected"));
+    return luaL_argerror(L, arg+1, LUASTR("function or level expected"));
   if (!lua_getinfo(L1, options, &ar))
-    return luaL_argerror(L, arg+2, FS("invalid option"));
+    return luaL_argerror(L, arg+2, LUASTR("invalid option"));
   lua_createtable(L, 0, 2);
   if (strchr(options, 'S')) {
-    settabss(L, FS("source"), ar.source);
-    settabss(L, FS("short_src"), ar.short_src);
-    settabsi(L, FS("linedefined"), ar.linedefined);
-    settabsi(L, FS("lastlinedefined"), ar.lastlinedefined);
-    settabss(L, FS("what"), ar.what);
+    settabss(L, LUASTR("source"), ar.source);
+    settabss(L, LUASTR("short_src"), ar.short_src);
+    settabsi(L, LUASTR("linedefined"), ar.linedefined);
+    settabsi(L, LUASTR("lastlinedefined"), ar.lastlinedefined);
+    settabss(L, LUASTR("what"), ar.what);
   }
   if (strchr(options, 'l'))
-    settabsi(L, FS("currentline"), ar.currentline);
+    settabsi(L, LUASTR("currentline"), ar.currentline);
   if (strchr(options, 'u'))
-    settabsi(L, FS("nups"), ar.nups);
+    settabsi(L, LUASTR("nups"), ar.nups);
   if (strchr(options, 'n')) {
-    settabss(L, FS("name"), ar.name);
-    settabss(L, FS("namewhat"), ar.namewhat);
+    settabss(L, LUASTR("name"), ar.name);
+    settabss(L, LUASTR("namewhat"), ar.namewhat);
   }
   if (strchr(options, 'L'))
-    treatstackoption(L, L1, FS("activelines"));
+    treatstackoption(L, L1, LUASTR("activelines"));
   if (strchr(options, 'f'))
-    treatstackoption(L, L1, FS("func"));
+    treatstackoption(L, L1, LUASTR("func"));
   return 1;  /* return table */
 }
 
@@ -148,7 +148,7 @@ static int db_getlocal (lua_State *L) {
   lua_Debug ar;
   const char *name;
   if (!lua_getstack(L1, luaL_checkint(L, arg+1), &ar))  /* out of range? */
-    return luaL_argerror(L, arg+1, FS("level out of range"));
+    return luaL_argerror(L, arg+1, LUASTR("level out of range"));
   name = lua_getlocal(L1, &ar, luaL_checkint(L, arg+2));
   if (name) {
     lua_xmove(L1, L, 1);
@@ -168,7 +168,7 @@ static int db_setlocal (lua_State *L) {
   lua_State *L1 = getthread(L, &arg);
   lua_Debug ar;
   if (!lua_getstack(L1, luaL_checkint(L, arg+1), &ar))  /* out of range? */
-    return luaL_argerror(L, arg+1, FS("level out of range"));
+    return luaL_argerror(L, arg+1, LUASTR("level out of range"));
   luaL_checkany(L, arg+3);
   lua_settop(L, arg+3);
   lua_xmove(L, L1, 1);
@@ -217,7 +217,7 @@ static void hookf (lua_State *L, lua_Debug *ar) {
     if (ar->currentline >= 0)
       lua_pushinteger(L, ar->currentline);
     else lua_pushnil(L);
-    lua_assert(lua_getinfo(L, FS("lS"), ar));
+    lua_assert(lua_getinfo(L, LUASTR("lS"), ar));
     lua_call(L, 2, 0);
   }
 }
@@ -351,19 +351,19 @@ static int db_errorfb (lua_State *L) {
       continue;
     }
     lua_pushliteral(L, "\n\t");
-    lua_getinfo(L1, FS("Snl"), &ar);
+    lua_getinfo(L1, LUASTR("Snl"), &ar);
     lua_pushfstring(L, "%s:", ar.short_src);
     if (ar.currentline > 0)
       lua_pushfstring(L, "%d:", ar.currentline);
     if (*ar.namewhat != '\0')  /* is there a name? */
-        lua_pushfstring(L, FS(" in function " LUA_QS), ar.name);
+        lua_pushfstring(L, LUASTR(" in function " LUA_QS), ar.name);
     else {
       if (*ar.what == 'm')  /* main? */
-        lua_pushfstring(L, FS(" in main chunk"));
+        lua_pushfstring(L, LUASTR(" in main chunk"));
       else if (*ar.what == 'C' || *ar.what == 't')
         lua_pushliteral(L, " ?");  /* C function or tail call */
       else
-        lua_pushfstring(L, FS(" in function <%s:%d>"),
+        lua_pushfstring(L, LUASTR(" in function <%s:%d>"),
                            ar.short_src, ar.linedefined);
     }
     lua_concat(L, lua_gettop(L) - arg);

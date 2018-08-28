@@ -684,7 +684,7 @@ static void prefixexp (LexState *ls, expdesc *v) {
       return;
     }
     default: {
-      luaX_syntaxerror(ls, FS("unexpected symbol"));
+      luaX_syntaxerror(ls, LUASTR("unexpected symbol"));
       return;
     }
   }

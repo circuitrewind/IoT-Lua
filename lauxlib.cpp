@@ -55,23 +55,23 @@
 LUALIB_API int luaL_argerror (lua_State *L, int narg, const char *extramsg) {
   lua_Debug ar;
   if (!lua_getstack(L, 0, &ar))  /* no stack frame? */
-    return luaL_error(L, FS("bad argument #%d (%s)"), narg, extramsg);
+    return luaL_error(L, LUASTR("bad argument #%d (%s)"), narg, extramsg);
   lua_getinfo(L, "n", &ar);
-  if (strcmp(ar.namewhat, FS("method")) == 0) {
+  if (strcmp(ar.namewhat, LUASTR("method")) == 0) {
     narg--;  /* do not count `self' */
     if (narg == 0)  /* error is in the self argument itself? */
-      return luaL_error(L, FS("calling " LUA_QS " on bad self (%s)"),
+      return luaL_error(L, LUASTR("calling " LUA_QS " on bad self (%s)"),
                            ar.name, extramsg);
   }
   if (ar.name == NULL)
     ar.name = "?";
-  return luaL_error(L, FS("bad argument #%d to " LUA_QS " (%s)"),
+  return luaL_error(L, LUASTR("bad argument #%d to " LUA_QS " (%s)"),
                         narg, ar.name, extramsg);
 }
 
 
 LUALIB_API int luaL_typerror (lua_State *L, int narg, const char *tname) {
-  const char *msg = lua_pushfstring(L, FS("%s expected, got %s"),
+  const char *msg = lua_pushfstring(L, LUASTR("%s expected, got %s"),
                                     tname, luaL_typename(L, narg));
   return luaL_argerror(L, narg, msg);
 }
@@ -117,7 +117,7 @@ LUALIB_API int luaL_checkoption (lua_State *L, int narg, const char *def,
     if (strcmp(lst[i], name) == 0)
       return i;
   return luaL_argerror(L, narg,
-                       lua_pushfstring(L, FS("invalid option " LUA_QS), name));
+                       lua_pushfstring(L, LUASTR("invalid option " LUA_QS), name));
 }
 
 
@@ -161,7 +161,7 @@ LUALIB_API void *luaL_checkudata (lua_State *L, int ud, const char *tname) {
 
 LUALIB_API void luaL_checkstack (lua_State *L, int space, const char *mes) {
   if (!lua_checkstack(L, space))
-    luaL_error(L, FS("stack overflow (%s)"), mes);
+    luaL_error(L, LUASTR("stack overflow (%s)"), mes);
 }
 
 
@@ -172,7 +172,7 @@ LUALIB_API void luaL_checktype (lua_State *L, int narg, int t) {
 
 LUALIB_API void luaL_checkanyfunction (lua_State *L, int narg) {
   if (lua_type(L, narg) != LUA_TFUNCTION && lua_type(L, narg) != LUA_TLIGHTFUNCTION) {
-    const char *msg = lua_pushfstring(L, FS("function or lightfunction expected, got %s"),
+    const char *msg = lua_pushfstring(L, LUASTR("function or lightfunction expected, got %s"),
                                       luaL_typename(L, narg));
     luaL_argerror(L, narg, msg);
   }
@@ -180,7 +180,7 @@ LUALIB_API void luaL_checkanyfunction (lua_State *L, int narg) {
 
 LUALIB_API void luaL_checkanytable (lua_State *L, int narg) {
   if (lua_type(L, narg) != LUA_TTABLE && lua_type(L, narg) != LUA_TROTABLE) {
-    const char *msg = lua_pushfstring(L, FS("table or rotable expected, got %s"),
+    const char *msg = lua_pushfstring(L, LUASTR("table or rotable expected, got %s"),
                                       luaL_typename(L, narg));
     luaL_argerror(L, narg, msg);
   }
@@ -189,7 +189,7 @@ LUALIB_API void luaL_checkanytable (lua_State *L, int narg) {
 
 LUALIB_API void luaL_checkany (lua_State *L, int narg) {
   if (lua_type(L, narg) == LUA_TNONE)
-    luaL_argerror(L, narg, FS("value expected"));
+    luaL_argerror(L, narg, LUASTR("value expected"));
 }
 
 
@@ -290,13 +290,13 @@ LUALIB_API void luaI_openlib (lua_State *L, const char *libname,
   if (libname) {
     int size = libsize(l);
     /* check whether lib already exists */
-    luaL_findtable(L, LUA_REGISTRYINDEX, FS("_LOADED"), 1);
+    luaL_findtable(L, LUA_REGISTRYINDEX, LUASTR("_LOADED"), 1);
     lua_getfield(L, -1, libname);  /* get _LOADED[libname] */
     if (!lua_istable(L, -1)) {  /* not found? */
       lua_pop(L, 1);  /* remove previous result */
       /* try global variable (and create one if it does not exist) */
       if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL)
-        luaL_error(L, FS("name conflict for module " LUA_QS), libname);
+        luaL_error(L, LUASTR("name conflict for module " LUA_QS), libname);
       lua_pushvalue(L, -1);
       lua_setfield(L, -3, libname);  /* _LOADED[libname] = new table */
     }
@@ -334,16 +334,16 @@ static int checkint (lua_State *L, int topop) {
 
 
 static void getsizes (lua_State *L) {
-  lua_getfield(L, LUA_REGISTRYINDEX, FS("LUA_SIZES"));
+  lua_getfield(L, LUA_REGISTRYINDEX, LUASTR("LUA_SIZES"));
   if (lua_isnil(L, -1)) {  /* no `size' table? */
     lua_pop(L, 1);  /* remove nil */
     lua_newtable(L);  /* create it */
     lua_pushvalue(L, -1);  /* `size' will be its own metatable */
     lua_setmetatable(L, -2);
     lua_pushliteral(L, "kv");
-    lua_setfield(L, -2, FS("__mode"));  /* metatable(N).__mode = "kv" */
+    lua_setfield(L, -2, LUASTR("__mode"));  /* metatable(N).__mode = "kv" */
     lua_pushvalue(L, -1);
-    lua_setfield(L, LUA_REGISTRYINDEX, FS("LUA_SIZES"));  /* store in register */
+    lua_setfield(L, LUA_REGISTRYINDEX, LUASTR("LUA_SIZES"));  /* store in register */
   }
 }
 
@@ -613,7 +613,7 @@ static const char *getF (lua_State *L, void *ud, size_t *size) {
 static int errfile (lua_State *L, const char *what, int fnameindex) {
   const char *serr = strerror(errno);
   const char *filename = lua_tostring(L, fnameindex) + 1;
-  lua_pushfstring(L, FS("cannot %s %s: %s"), what, filename, serr);
+  lua_pushfstring(L, LUASTR("cannot %s %s: %s"), what, filename, serr);
   lua_remove(L, fnameindex);
   return LUA_ERRFILE;
 }
@@ -631,9 +631,9 @@ LUALIB_API int luaL_loadfile (lua_State *L, const char *filename) {
     lf.f = stdin;
   }
   else {
-    lua_pushfstring(L, FS("@%s"), filename);
-    lf.f = fopen(filename, FS("r"));
-    if (lf.f == NULL) return errfile(L, FS("open"), fnameindex);
+    lua_pushfstring(L, LUASTR("@%s"), filename);
+    lf.f = fopen(filename, LUASTR("r"));
+    if (lf.f == NULL) return errfile(L, LUASTR("open"), fnameindex);
 #ifndef LUA_CROSS_COMPILER
     srcp = dm_getaddr(fileno(lf.f));
     if (srcp) {
@@ -650,8 +650,8 @@ LUALIB_API int luaL_loadfile (lua_State *L, const char *filename) {
     if (c == '\n') c = getc(lf.f);
   }
   if (c == LUA_SIGNATURE[0] && filename) {  /* binary file? */
-    lf.f = freopen(filename, FS("rb"), lf.f);  /* reopen in binary mode */
-    if (lf.f == NULL) return errfile(L, FS("reopen"), fnameindex);
+    lf.f = freopen(filename, LUASTR("rb"), lf.f);  /* reopen in binary mode */
+    if (lf.f == NULL) return errfile(L, LUASTR("reopen"), fnameindex);
     /* skip eventual `#!...' */
    while ((c = getc(lf.f)) != EOF && c != LUA_SIGNATURE[0]) ;
    lf.extraline = 0;
@@ -667,7 +667,7 @@ LUALIB_API int luaL_loadfile (lua_State *L, const char *filename) {
   if (filename) fclose(lf.f);  /* close file (even in case of errors) */
   if (readstatus) {
     lua_settop(L, fnameindex);  /* ignore results from `lua_load' */
-    return errfile(L, FS("read"), fnameindex);
+    return errfile(L, LUASTR("read"), fnameindex);
   }
   lua_remove(L, fnameindex);
   return status;
@@ -757,7 +757,7 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
 
 static int panic (lua_State *L) {
   (void)L;  /* to avoid warnings */
-  fprintf(stderr, FS("PANIC: unprotected error in call to Lua API (%s)\n"),
+  fprintf(stderr, LUASTR("PANIC: unprotected error in call to Lua API (%s)\n"),
                    lua_tostring(L, -1));
   return 0;
 }
