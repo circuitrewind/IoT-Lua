@@ -29,6 +29,9 @@ static lua_flash_string *lua_flash_first = nullptr;
 LUA_API const char *lua_flash_allocate(const char *string) {
 	auto len			= strlen_P(string);
 	auto item			= (lua_flash_string*) malloc(len + sizeof(lua_flash_string) + 1);
+
+	if (!item) return "";
+
 	item->next			= nullptr;
 	memcpy_P(item->buffer, string, len);
 	item->buffer[len]	= '\0';
